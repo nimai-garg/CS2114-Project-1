@@ -16,6 +16,7 @@ public class FlightGame
     private Scanner scanner;
     private int completedFlights;
     private boolean quit;
+    private boolean gameOver;
 
     /**
      * This creates a game that is reading from the console
@@ -27,6 +28,7 @@ public class FlightGame
         random = new Random();
         scanner = new Scanner(System.in);
         completedFlights = 0;
+        gameOver = false;
     }
 
     /**
@@ -71,9 +73,18 @@ public class FlightGame
      */
     public void processDecision(String decision, Flight flight)
     {
+        if (gameOver)
+        {
+            return;
+        }
         if (decision == null || decision.trim().isEmpty())
         {
             System.out.println("Please enter a decision.");
+            return;
+        }
+        if ("quit".equalsIgnoreCase(decision.trim()))
+        {
+            quitGame();
             return;
         }
         if (flight == null || !flights.contains(flight))
@@ -158,8 +169,9 @@ public class FlightGame
      */
     public void endGame()
     {
-        if (completedFlights >= MAX_FLIGHTS)
+        if (!gameOver && completedFlights >= MAX_FLIGHTS)
         {
+            gameOver = true;
             System.out.println("Hokie Air has completed 10 flights.");
         }
     }
@@ -169,8 +181,12 @@ public class FlightGame
      */
     public void quitGame()
     {
-        quit = true;
-        System.out.println("Thanks for playing Hokie Air.");
+        if (!gameOver)
+        {
+            quit = true;
+            gameOver = true;
+            System.out.println("Thanks for playing Hokie Air.");
+        }
     }
 
     /**
@@ -181,7 +197,7 @@ public class FlightGame
     {
         System.out.println("Welcome to Hokie Air: Cleared for Departure!");
         Flight currentFlight = null;
-        while (!quit && completedFlights < MAX_FLIGHTS)
+        while (!quit && !gameOver && completedFlights < MAX_FLIGHTS)
         {
             if (currentFlight == null
                 || !"Scheduled".equals(currentFlight.getStatus()))
