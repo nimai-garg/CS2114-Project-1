@@ -15,6 +15,7 @@ public class FlightGame
     private Options options;
     private Random random;
     private Scanner scanner;
+    private int completedFlights;
 
     /**
      * This creates a game that is reading from the console
@@ -26,6 +27,7 @@ public class FlightGame
         options = new Options();
         random = new Random();
         scanner = new Scanner(System.in);
+        completedFlights = 0;
     }
 
     /**
@@ -81,11 +83,50 @@ public class FlightGame
             System.out.println("Please choose a current flight.");
             return;
         }
+        if (!"Scheduled".equalsIgnoreCase(flight.getStatus()))
+        {
+            System.out.println("This flight has already been resolved.");
+            return;
+        }
 
         String action = decision.trim();
+        if ("add fuel".equalsIgnoreCase(action))
+        {
+            double fuelNeeded = flight.getFuelNeeded();
+            double fuelAmount = flight.getAircraft().getFuelAmount();
+            double fuelToAdd = fuelNeeded - fuelAmount;
+            if (fuelToAdd <= 0)
+            {
+                System.out.println("This flight does not need more fuel.");
+                return;
+            }
+
+            flight.getAircraft().addFuel(fuelToAdd);
+            System.out.println("Added enough fuel for flight "
+                + flight.getFlightNumber() + ".");
+            return;
+        }
+        if ("delay".equalsIgnoreCase(action))
+        {
+            flight.delayFlight();
+            completedFlights++;
+            System.out.println("Flight " + flight.getFlightNumber()
+                + " was delayed.");
+            endGame();
+            return;
+        }
+        if ("cancel".equalsIgnoreCase(action))
+        {
+            flight.cancelFlight();
+            completedFlights++;
+            System.out.println("Flight " + flight.getFlightNumber()
+                + " was cancelled.");
+            endGame();
+            return;
+        }
         if (!"dispatch".equalsIgnoreCase(action))
         {
-            System.out.println("Choose Dispatch or Quit.");
+            System.out.println("Choose Dispatch, Add Fuel, Delay, or Cancel.");
             return;
         }
 
@@ -101,8 +142,10 @@ public class FlightGame
         }
 
         flight.completeFlight();
+        completedFlights++;
         System.out.println("Flight " + flight.getFlightNumber()
             + " dispatched successfully.");
+        endGame();
     }
 
     /**
@@ -110,7 +153,7 @@ public class FlightGame
      */
     public void endGame()
     {
-        if (flights.size() >= MAX_FLIGHTS)
+        if (completedFlights >= MAX_FLIGHTS)
         {
             System.out.println("Hokie Air has completed 10 flights.");
         }
