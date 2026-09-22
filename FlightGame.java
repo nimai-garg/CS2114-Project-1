@@ -38,7 +38,27 @@ public class FlightGame
      */
     public Flight generateFlight()
     {
-        return null;
+        String[] routes = {"ROA to ATL", "ROA to CLT", "ROA to IAD"};
+        String[] weather = {"Clear", "Rain", "Windy"};
+
+        int passengerCapacity = 50 + random.nextInt(51);
+        int passengerCount = 20 + random.nextInt(
+            passengerCapacity - 19);
+        double fuelCapacity = 1000 + random.nextInt(1001);
+        double fuelAmount = 300 + random.nextInt(
+            (int)fuelCapacity - 299);
+        double fuelNeeded = 200 + random.nextInt(
+            (int)fuelCapacity - 199);
+        int flightTime = 30 + random.nextInt(151);
+
+        Aircraft aircraft = new Aircraft("Hokie Regional", fuelAmount,
+            fuelCapacity, passengerCapacity);
+        Flight flight = new Flight(aircraft, flights.size() + 1, flightTime,
+            routes[random.nextInt(routes.length)],
+            weather[random.nextInt(weather.length)], passengerCount,
+            fuelNeeded, "Scheduled");
+        flights.add(flight);
+        return flight;
     }
 
     /**
@@ -54,7 +74,35 @@ public class FlightGame
         if (decision == null || decision.trim().isEmpty())
         {
             System.out.println("Please enter a decision.");
+            return;
         }
+        if (flight == null || !flights.contains(flight))
+        {
+            System.out.println("Please choose a current flight.");
+            return;
+        }
+
+        String action = decision.trim();
+        if (!"dispatch".equalsIgnoreCase(action))
+        {
+            System.out.println("Choose Dispatch or Quit.");
+            return;
+        }
+
+        ArrayList<String> problems = flight.getDispatchProblems();
+        if (!problems.isEmpty())
+        {
+            System.out.println("This flight cannot be dispatched yet.");
+            for (String problem : problems)
+            {
+                System.out.println(problem);
+            }
+            return;
+        }
+
+        flight.completeFlight();
+        System.out.println("Flight " + flight.getFlightNumber()
+            + " dispatched successfully.");
     }
 
     /**
