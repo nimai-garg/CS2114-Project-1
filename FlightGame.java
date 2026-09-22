@@ -82,6 +82,11 @@ public class FlightGame
             System.out.println("Please enter a decision.");
             return;
         }
+        if ("quit".equalsIgnoreCase(decision.trim()))
+        {
+            quitGame();
+            return;
+        }
         if (flight == null || !flights.contains(flight))
         {
             System.out.println("Please choose a current flight.");
