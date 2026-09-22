@@ -85,20 +85,24 @@ public class FlightOutcome
                     "Aircraft already has sufficient fuel.");
 
             case "delay":
+                int delayPenalty = flight.getPassengerCount() / 5;
                 return new FlightOutcome(
                     0,
-                    -5,
+                    -delayPenalty,
                     true,
                     "Flight " + flight.getFlightNumber()
-                        + " delayed (-5 Reputation).");
+                        + " delayed (-" + delayPenalty + " Reputation).");
 
             case "cancel":
+                int refund = flight.getPassengerCount() * 150;
+                int cancelPenalty = flight.getPassengerCount() / 3;
                 return new FlightOutcome(
-                    -500,
-                    -15,
+                    -refund,
+                    -cancelPenalty,
                     true,
                     "Flight " + flight.getFlightNumber()
-                        + " cancelled (-$500, -15 Reputation).");
+                        + " cancelled (-$" + refund + ", -" + cancelPenalty
+                        + " Reputation).");
 
             default:
                 return new FlightOutcome(
