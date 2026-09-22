@@ -11,6 +11,7 @@ public class FlightGame
 {
     private static final int MAX_FLIGHTS = 10;
     private ArrayList<Flight> flights;
+    private Dispatcher dispatcher;
     private Options options;
     private Random random;
     private Scanner scanner;
@@ -24,6 +25,7 @@ public class FlightGame
     public FlightGame()
     {
         flights = new ArrayList<Flight>();
+        dispatcher = new Dispatcher(10000, 100, 0);
         options = new Options();
         random = new Random();
         scanner = new Scanner(System.in);
@@ -117,26 +119,47 @@ public class FlightGame
                 return;
             }
 
+            FlightOutcome outcome = calculateOutcome(action, flight);
+            if (!canApply(outcome))
+            {
+                return;
+            }
             flight.getAircraft().addFuel(fuelToAdd);
+            dispatcher.applyOutcome(outcome);
             System.out.println("Added enough fuel for flight "
                 + flight.getFlightNumber() + ".");
+            displayAirlineStatus();
             return;
         }
         if ("delay".equalsIgnoreCase(action))
         {
+            FlightOutcome outcome = calculateOutcome(action, flight);
+            if (!canApply(outcome))
+            {
+                return;
+            }
             flight.delayFlight();
+            dispatcher.applyOutcome(outcome);
             completedFlights++;
             System.out.println("Flight " + flight.getFlightNumber()
                 + " was delayed.");
+            displayAirlineStatus();
             endGame();
             return;
         }
         if ("cancel".equalsIgnoreCase(action))
         {
+            FlightOutcome outcome = calculateOutcome(action, flight);
+            if (!canApply(outcome))
+            {
+                return;
+            }
             flight.cancelFlight();
+            dispatcher.applyOutcome(outcome);
             completedFlights++;
             System.out.println("Flight " + flight.getFlightNumber()
                 + " was cancelled.");
+            displayAirlineStatus();
             endGame();
             return;
         }
@@ -157,11 +180,44 @@ public class FlightGame
             return;
         }
 
+        FlightOutcome outcome = calculateOutcome(action, flight);
+        if (!canApply(outcome))
+        {
+            return;
+        }
         flight.completeFlight();
+        dispatcher.applyOutcome(outcome);
         completedFlights++;
         System.out.println("Flight " + flight.getFlightNumber()
             + " dispatched successfully.");
+        displayAirlineStatus();
         endGame();
+    }
+
+    /** Returns the outcome calculated by the shared outcome class. */
+    private FlightOutcome calculateOutcome(String action, Flight flight)
+    {
+        FlightOutcome calculator = new FlightOutcome(0, 0, false, "");
+        return calculator.calculateOutcome(action, flight);
+    }
+
+    /** Checks affordability before an action changes the flight or airline. */
+    private boolean canApply(FlightOutcome outcome)
+    {
+        int cost = -outcome.getCashChange();
+        if (cost > 0 && !dispatcher.canAfford(cost))
+        {
+            System.out.println("Hokie Air cannot afford that action.");
+            return false;
+        }
+        return true;
+    }
+
+    /** Prints the airline values that are carried into later flights. */
+    private void displayAirlineStatus()
+    {
+        System.out.println("Cash: $" + dispatcher.getCash()
+            + " | Reputation: " + dispatcher.getReputation());
     }
 
     /**
@@ -173,6 +229,7 @@ public class FlightGame
         {
             gameOver = true;
             System.out.println("Hokie Air has completed 10 flights.");
+            displayAirlineStatus();
         }
     }
 
@@ -211,6 +268,7 @@ public class FlightGame
                 + "/" + currentFlight.getAircraft().getPassengerCapacity());
             System.out.println("Fuel: " + currentFlight.getAircraft().getFuelAmount()
                 + "; needed: " + currentFlight.getFuelNeeded());
+            displayAirlineStatus();
             for (String problem : currentFlight.getDispatchProblems())
             {
                 System.out.println(problem);
