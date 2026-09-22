@@ -1,9 +1,111 @@
 public class FlightOutcome
 {
-    //~ Fields ................................................................
+    private int cashChange;
+    private int reputationChange;
+    private boolean roundEnds;
+    private String message;
 
-    //~ Constructors ..........................................................
+    public FlightOutcome(
+        int cashChange,
+        int reputationChange,
+        boolean roundEnds,
+        String message)
+    {
+        this.cashChange = cashChange;
+        this.reputationChange = reputationChange;
+        this.roundEnds = roundEnds;
+        this.message = message;
+    }
 
-    //~Public  Methods ........................................................
 
+    public int getCashChange()
+    {
+        return this.cashChange;
+    }
+
+
+    public int getReputationChange()
+    {
+        return this.reputationChange;
+    }
+
+
+    public boolean doesRoundEnd()
+    {
+        return this.roundEnds;
+    }
+
+
+    public String getMessage()
+    {
+        return this.message;
+    }
+
+
+    public static FlightOutcome calculateOutcome(String decision, Flight flight)
+    {
+        if (decision == null || flight == null)
+        {
+            return new FlightOutcome(
+                0,
+                0,
+                false,
+                "Invalid decision or flight data. Please check value of input fields");
+        }
+
+        String action = decision.trim().toLowerCase();
+
+        switch (action)
+        {
+            case "dispatch":
+                int revenue = flight.getPassengerCount() * 150;
+                return new FlightOutcome(
+                    revenue,
+                    10,
+                    true,
+                    "Flight " + flight.getFlightNumber()
+                        + " departed successfully!");
+
+            case "add fuel":
+                Aircraft ac = flight.getAircraft();
+                double needed = flight.getFuelNeeded() - ac.getFuelAmount();
+                if (needed > 0)
+                {
+                    int cost = (int)Math.ceil(needed * 1.50);
+                    return new FlightOutcome(
+                        -cost,
+                        0,
+                        false,
+                        "Refueled aircraft for $" + cost + ".");
+                }
+                return new FlightOutcome(
+                    0,
+                    0,
+                    false,
+                    "Aircraft already has sufficient fuel.");
+
+            case "delay":
+                return new FlightOutcome(
+                    0,
+                    -5,
+                    true,
+                    "Flight " + flight.getFlightNumber()
+                        + " delayed (-5 Reputation).");
+
+            case "cancel":
+                return new FlightOutcome(
+                    -500,
+                    -15,
+                    true,
+                    "Flight " + flight.getFlightNumber()
+                        + " cancelled (-$500, -15 Reputation).");
+
+            default:
+                return new FlightOutcome(
+                    0,
+                    0,
+                    false,
+                    "Unknown decision: " + decision);
+        }
+    }
 }
