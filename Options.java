@@ -1,49 +1,77 @@
 import java.util.ArrayList;
 
+/** This is listing the actions available for the current flight. */
 public class Options
 {
-    private ArrayList<String> options
+    private ArrayList<String> options;
 
+    /** This is creating the standard menu. */
+    public Options()
+    {
+        options = new ArrayList<String>();
+        options.add("Dispatch");
+        options.add("Add Fuel");
+        options.add("Delay");
+        options.add("Cancel");
+    }
+
+    /** This is creating a menu from the supplied actions. */
     public Options(ArrayList<String> options)
     {
-        this.options = options;
+        this.options = new ArrayList<String>(options);
     }
 
-
-    /**
-     * Gets available options from dispatchProblems and returns them
-     */
-    public ArrayList<String> getAvailableOptions(ArrayList<String> dispatchProblems))
+    /** This is returning  theactions that can be used with the current dispatch problems. */
+    public ArrayList<String> getAvailableOptions(ArrayList<String> dispatchProblems)
     {
-        // work on 
-        return null;
-    }
-
-
-    /**
-     * prints out options in a numbered list
-     */
-    public void displayOptions(ArrayList<String> options)
-    {
-        for (int i = 0; i < options.size(); i++)
+        ArrayList<String> available = new ArrayList<String>();
+        for (String option : options)
         {
-            System.out.println(i + "." + options[i]);
+            if ("Dispatch".equalsIgnoreCase(option) && !dispatchProblems.isEmpty())
+            {
+                continue;
+            }
+            if ("Add Fuel".equalsIgnoreCase(option)
+                && !dispatchProblems.contains("Fuel Problem"))
+            {
+                continue;
+            }
+            available.add(option);
+        }
+        return available;
+    }
+
+    /** This is printing the actions numbered from one. */
+    public void displayOptions(ArrayList<String> available)
+    {
+        for (int i = 0; i < available.size(); i++)
+        {
+            System.out.println((i + 1) + ". " + available.get(i));
         }
     }
 
-
-    /**
-     * Checks if input matches any of the Array List string options or numbered value
-     */
-    public boolean isValidChoice(String input, ArrayList<String> options)
+    /** This is accepting either the displayed number or the action name. */
+    public boolean isValidChoice(String input, ArrayList<String> available)
     {
-        for (int i = 0; i < options.size(); i++)
+        return getChoice(input, available) != null;
+    }
+
+    /** This is returning the matching action, or null for invalid input. */
+    public String getChoice(String input, ArrayList<String> available)
+    {
+        if (input == null)
         {
-            if ((String)(options[i]) == input || input == (String)(i))
+            return null;
+        }
+        String choice = input.trim();
+        for (int i = 0; i < available.size(); i++)
+        {
+            if (available.get(i).equalsIgnoreCase(choice)
+                || Integer.toString(i + 1).equals(choice))
             {
-                return true;
+                return available.get(i);
             }
         }
-        return false;
+        return null;
     }
 }

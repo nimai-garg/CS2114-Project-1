@@ -11,11 +11,11 @@ public class FlightGame
 {
     private static final int MAX_FLIGHTS = 10;
     private ArrayList<Flight> flights;
-    private Dispatcher dispatcher;
     private Options options;
     private Random random;
     private Scanner scanner;
     private int completedFlights;
+    private boolean quit;
 
     /**
      * This creates a game that is reading from the console
@@ -23,7 +23,6 @@ public class FlightGame
     public FlightGame()
     {
         flights = new ArrayList<Flight>();
-        dispatcher = new Dispatcher(10000, 100, 0);
         options = new Options();
         random = new Random();
         scanner = new Scanner(System.in);
@@ -65,8 +64,7 @@ public class FlightGame
 
     /**
      * This is validating a menu number or action name before applying any
-     * changes. FlightOutcome owns pricing, reputation effects, and roun
-     * completion. The add Fuel fills the deficit needed by this flight
+     * changes. Adding fuel fills the deficit needed by this flight.
      *
      * @param decision the selected number or action
      * @param flight the flight being managed
@@ -89,7 +87,14 @@ public class FlightGame
             return;
         }
 
-        String action = decision.trim();
+        ArrayList<String> available = options.getAvailableOptions(
+            flight.getDispatchProblems());
+        String action = options.getChoice(decision, available);
+        if (action == null)
+        {
+            System.out.println("Please choose an available action.");
+            return;
+        }
         if ("add fuel".equalsIgnoreCase(action))
         {
             double fuelNeeded = flight.getFuelNeeded();
@@ -164,6 +169,7 @@ public class FlightGame
      */
     public void quitGame()
     {
+        quit = true;
         System.out.println("Thanks for playing Hokie Air.");
     }
 
@@ -174,16 +180,41 @@ public class FlightGame
     private void play()
     {
         System.out.println("Welcome to Hokie Air: Cleared for Departure!");
-        while (flights.size() < MAX_FLIGHTS && scanner.hasNextLine())
+        Flight currentFlight = null;
+        while (!quit && completedFlights < MAX_FLIGHTS)
         {
+            if (currentFlight == null
+                || !"Scheduled".equals(currentFlight.getStatus()))
+            {
+                currentFlight = generateFlight();
+            }
+            System.out.println("Flight " + currentFlight.getFlightNumber()
+                + ": " + currentFlight.getRoute());
+            System.out.println("Weather: " + currentFlight.getWeather());
+            System.out.println("Passengers: " + currentFlight.getPassengerCount()
+                + "/" + currentFlight.getAircraft().getPassengerCapacity());
+            System.out.println("Fuel: " + currentFlight.getAircraft().getFuelAmount()
+                + "; needed: " + currentFlight.getFuelNeeded());
+            for (String problem : currentFlight.getDispatchProblems())
+            {
+                System.out.println(problem);
+            }
+            options.displayOptions(options.getAvailableOptions(
+                currentFlight.getDispatchProblems()));
+            System.out.println("Choose an action, or type Quit.");
+            if (!scanner.hasNextLine())
+            {
+                quitGame();
+                return;
+            }
             String decision = scanner.nextLine().trim();
             if ("quit".equalsIgnoreCase(decision))
             {
                 quitGame();
                 return;
             }
+            processDecision(decision, currentFlight);
         }
-        endGame();
     }
 
     /**

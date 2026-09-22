@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class Flight
 {
     // ~ Fields ................................................................
@@ -58,8 +60,9 @@ public class Flight
     }
     
     public ArrayList<String> getDispatchProblems() {
-        ArrayList<String> problems = new ArrayList<String>;
-        if (weather == "Sunny") {
+        ArrayList<String> problems = new ArrayList<String>();
+        if (!"Sunny".equalsIgnoreCase(weather)
+            && !"Clear".equalsIgnoreCase(weather)) {
             problems.add("Weather Problem");
         }
         if (passengerCount > aircraft.getPassengerCapacity()) {

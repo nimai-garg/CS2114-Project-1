@@ -37,7 +37,7 @@ public class Aircraft
         if (fuelAmount >= fuelNeeded) {
             return true;
         }
-        return false
+        return false;
     }
     
     public boolean canCarry(int passengerCount) {
@@ -48,15 +48,9 @@ public class Aircraft
     }
     
     public void addFuel(double amount) {
-        double refuelCapacity = 0;
-        refuelCapacity = fuelCapacity - fuelAmount;
-        
-        if (0 < amount <= refuelCapacity) {
-            fuelAmount += amount;
-        } else {
-            amount = refuelCapacity;
-            fuelAmount += amount;
+        if (amount <= 0) {
+            return;
         }
-        
+        fuelAmount = Math.min(fuelCapacity, fuelAmount + amount);
     }
 }

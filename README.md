@@ -1,1 +1,1 @@
-# CS2114-Project-1
+# CS2114 Project 1

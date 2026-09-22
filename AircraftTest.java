@@ -1,78 +1,100 @@
 import student.TestCase;
 
 /**
- * Class to test methods in Aircraft class.
+ * This is the class to test methods in Aircraft class.
  */
 public class AircraftTest extends TestCase
 {
     //~ Fields ................................................................
     private Aircraft aircraft;
+
     //~ Constructors ..........................................................
+
     /**
-     * Sets up new Aircraft object for testing.
+     * This is setting up a new Aircraft object for testing.
      */
+    @Override
     public void setUp() {
         aircraft = new Aircraft("Airbus A220", 5000.00, 5700.00, 200);
     }
+
     //~Public  Methods ........................................................
     /**
-     * Tests if .getName() returns correct name.
+     * This is testing if .getName() returns correct name.
      */
     public void testGetName() {
         assertEquals("Airbus A220", aircraft.getName());
     }
     
     /**
-     * Tests if .getFuelAmount() returns correct fuel amount.
+     * This is testing if .getFuelAmount() returns correct fuel amount.
      */
     public void testGetFuelAmount() {
-        assertEquals(5000.00, aircraft.getFuelAmount());
+        assertEquals(5000.00, aircraft.getFuelAmount(), 0.001);
     }
     
     /**
-     * Tests if .getFuelCapacity() returns correct fuel capacity.
+     * This is testing if .getFuelCapacity() returns correct fuel capacity.
      */
     public void testGetFuelCapacity() {
-        assertEquals(5700.00, aircraft.getFuelCapacity());
+        assertEquals(5700.00, aircraft.getFuelCapacity(), 0.001);
     }
     
     /**
-     * Tests if .getPassengerCapacity() returns correct passenger capacity.
+     * This is testing if .getPassengerCapacity() returns correct passenger capacity.
      */
     public void testGetPassengerCapacity() {
         assertEquals(200, aircraft.getPassengerCapacity());
     }
     
     /**
-     * Tests if .hasEnoughFuel() returns true when fuelAmount is more
+     * This is testing if .hasEnoughFuel() returns true when fuelAmount is more
      * than fuelNeeded and false otherwise.
      */
     public void testHasEnoughFuel() {
         assertTrue(aircraft.hasEnoughFuel(4800));
+        assertTrue(aircraft.hasEnoughFuel(5000));
         assertFalse(aircraft.hasEnoughFuel(5200));
     }
     
     /**
-     * Tests if .canCarry() returns true when passengerCount is less than
+     * This is testing if .canCarry() returns true when passengerCount is less than
      * passengerCapacity and false otherwise.
      */
     public void testCanCarry() {
         assertTrue(aircraft.canCarry(150));
+        assertTrue(aircraft.canCarry(200));
         assertFalse(aircraft.canCarry(220));
     }
     
     /**
-     * Tests if .addFuel() adds correct fuel depending on whether amount
+     * This is testing if .addFuel() adds correct fuel depending on whether amount
      * entered by user would cause fuel amount to be above capacity
      */
     public void testAddFuel() {
         aircraft.addFuel(200.00);
-        assertEquals(5200.00, aircraft.getFuelAmount());
+        assertEquals(5200.00, aircraft.getFuelAmount(), 0.001);
         
         aircraft.addFuel(900.00);
-        assertEquals(5700.00, aircraft.getFuelAmount());
+        assertEquals(5700.00, aircraft.getFuelAmount(), 0.001);
         
         aircraft.addFuel(-100.00);
-        assertEquals(5000.00, aircraft.getFuelAmount());
+        assertEquals(5700.00, aircraft.getFuelAmount(), 0.001);
+    }
+
+    /** This is testing that nonpositive fuel amounts leave a partially full tank alone. */
+    public void testAddNonpositiveFuel() {
+        aircraft.addFuel(-100.00);
+        assertEquals(5000.00, aircraft.getFuelAmount(), 0.001);
+        aircraft.addFuel(0.00);
+        assertEquals(5000.00, aircraft.getFuelAmount(), 0.001);
+    }
+
+    /** This is testing filling the tank exactly and adding fuel to a full tank. */
+    public void testAddFuelToCapacity() {
+        aircraft.addFuel(700.00);
+        assertEquals(5700.00, aircraft.getFuelAmount(), 0.001);
+        aircraft.addFuel(100.00);
+        assertEquals(5700.00, aircraft.getFuelAmount(), 0.001);
     }
 }
