@@ -26,6 +26,101 @@ public class Dispatcher
         this.roundsCompleted = roundsCompleted;
     }
 
+    // ----------------------------------------------------------
+    /**
+     * Place a description of your method here.
+     * @return
+     */
     //~Public  Methods ........................................................
+    
+    public int getCash() {
+        return this.cash;
+    }
 
+    /**
+     * Returns the airline's current reputation score.
+     *
+     * @return the current reputation
+     */
+    public int getReputation() {
+        return this.reputation;
+    }
+
+    /**
+     * Returns the number of completed flight rounds.
+     *
+     * @return the count of completed rounds
+     */
+    public int getRoundsCompleted() {
+        return this.roundsCompleted;
+    }
+
+    /**
+     * Determines whether the airline can afford a specified cost.
+     *
+     * @param amount the cost to be verified
+     * @return true if amount is non-negative and affordable; false otherwise
+     */
+    public boolean canAfford(int amount) {
+        if (amount < 0) {
+            return false;
+        }
+        return this.cash >= amount;
+    }
+
+    /**
+     * Applies the cash and reputation changes from a decision outcome.
+     * Advances the round count if the outcome ends the round.
+     *
+     * @param outcome the FlightOutcome to process
+     */
+    public void applyOutcome(FlightOutcome outcome) {
+        if (outcome == null) {
+            return;
+        }
+        this.cash += outcome.getCashChange();
+        this.reputation += outcome.getReputationChange();
+        if (outcome.doesRoundEnd()) {
+            this.roundsCompleted++;
+        }
+    }
+
+    /** Returns the airline's current cash balance. */
+    public int getCash()
+    {
+        return cash;
+    }
+
+    /** Returns the airline's current reputation score. */
+    public int getReputation()
+    {
+        return reputation;
+    }
+
+    /** Returns the number of resolved flight rounds. */
+    public int getRoundsCompleted()
+    {
+        return roundsCompleted;
+    }
+
+    /** Returns whether the airline can pay an action's cost. */
+    public boolean canAfford(int amount)
+    {
+        return amount >= 0 && cash >= amount;
+    }
+
+    /** Applies an action's financial, reputation, and round effects. */
+    public void applyOutcome(FlightOutcome outcome)
+    {
+        if (outcome == null)
+        {
+            return;
+        }
+        cash += outcome.getCashChange();
+        reputation = Math.max(0, reputation + outcome.getReputationChange());
+        if (outcome.doesRoundEnd())
+        {
+            roundsCompleted++;
+        }
+    }
 }
