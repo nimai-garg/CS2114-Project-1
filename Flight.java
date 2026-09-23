@@ -1,5 +1,15 @@
 import java.util.ArrayList;
 
+// -------------------------------------------------------------------------
+/**
+ * Class that creates a Flight object that holds information related to the
+ * flight, including the aircraft, flight number, route, passenger count, etc.
+ * Also creates list of flight problems by checking for problems with bad
+ * weather conditions, too many passengers, and not enough fuel.
+ * 
+ * @author Sarah Beatty
+ * @version Sep 22, 2026
+ */
 public class Flight
 {
     // ~ Fields ................................................................
@@ -13,10 +23,37 @@ public class Flight
     String status;
     private int arrivalDelayMinutes;
 
+    // ----------------------------------------------------------
+    /**
+     * Create a new Flight object.
+     * 
+     * @param aircraft
+     *            Aircraft assigned to flight.
+     * @param flightNumber
+     *            flight's identifying number.
+     * @param flightTime
+     *            flight length (in minutes).
+     * @param route
+     *            flight's origin and destination.
+     * @param weather
+     *            weather condition of origin/destination.
+     * @param passengerCount
+     *            total passengers on flight.
+     * @param fuelNeeded
+     *            fuel amount needed for flight.
+     * @param status
+     *            current status of flight.
+     */
     // ~ Constructors ..........................................................
     public Flight(
-        Aircraft aircraft, int flightNumber, int flightTime, String route,
-        String weather, int passengerCount, double fuelNeeded, String status)
+        Aircraft aircraft,
+        int flightNumber,
+        int flightTime,
+        String route,
+        String weather,
+        int passengerCount,
+        double fuelNeeded,
+        String status)
     {
         if (aircraft == null || flightNumber <= 0 || flightTime <= 0
             || route == null || route.trim().isEmpty()
@@ -36,6 +73,14 @@ public class Flight
         this.fuelNeeded = fuelNeeded;
         this.status = status;
     }
+
+
+    // ----------------------------------------------------------
+    /**
+     * The aircraft assigned to the flight.
+     * 
+     * @return Returns Aircraft object.
+     */
     // ~Public Methods ........................................................
     public Flight(int flightNumber, String route, int passengerCount,
         double fuelNeeded, String weather, int flightTime, Aircraft aircraft) {
@@ -46,49 +91,129 @@ public class Flight
     public Aircraft getAircraft() {
         return aircraft;
     }
-    
-    public int getFlightNumber() {
+
+
+    // ----------------------------------------------------------
+    /**
+     * The flight's identifying number.
+     * 
+     * @return Returns flight number.
+     */
+    public int getFlightNumber()
+    {
         return flightNumber;
     }
 
-    public int getFlightTime() {
+
+    // ----------------------------------------------------------
+    /**
+     * How much time the flight lasts (in minutes).
+     * 
+     * @return Returns the flight's time.
+     */
+    public int getFlightTime()
+    {
         return flightTime;
     }
-    
-    public String getRoute() {
+
+
+    // ----------------------------------------------------------
+    /**
+     * The flight's route as the origin and destination airports.
+     * 
+     * @return Returns the flight's route.
+     */
+    public String getRoute()
+    {
         return route;
     }
-    
-    public String getWeather() {
+
+
+    // ----------------------------------------------------------
+    /**
+     * Weather condition of the flight origin/destination.
+     * 
+     * @return Returns the weather condition.
+     */
+    public String getWeather()
+    {
         return weather;
     }
-    
-    public int getPassengerCount() {
+
+
+    // ----------------------------------------------------------
+    /**
+     * Total number of passengers on the flight.
+     * 
+     * @return Returns number of passengers.
+     */
+    public int getPassengerCount()
+    {
         return passengerCount;
     }
-    
-    public double getFuelNeeded() {
+
+
+    // ----------------------------------------------------------
+    /**
+     * Amount of fuel needed to complete flight.
+     * 
+     * @return Returns fuel amount needed.
+     */
+    public double getFuelNeeded()
+    {
         return fuelNeeded;
     }
-    
-    public String getStatus() {
+
+
+    // ----------------------------------------------------------
+    /**
+     * Current status of a flight.
+     * 
+     * @return Returns the flight status.
+     */
+    public String getStatus()
+    {
         return status;
     }
-    
-    public ArrayList<String> getDispatchProblems() {
+
+
+    // ----------------------------------------------------------
+    /**
+     * Checks for problems with weather, passenger count, and fuel and returns
+     * list of problems to create options for user.
+     * 
+     * @return Returns ArrayList with flight problems.
+     */
+    public ArrayList<String> getDispatchProblems()
+    {
         ArrayList<String> problems = new ArrayList<String>();
         if (!"Sunny".equalsIgnoreCase(weather)
-            && !"Clear".equalsIgnoreCase(weather)) {
+            && !"Clear".equalsIgnoreCase(weather))
+        {
             problems.add("Weather Problem");
         }
-        if (passengerCount > aircraft.getPassengerCapacity()) {
+        if (passengerCount > aircraft.getPassengerCapacity())
+        {
             problems.add("Passenger Problem");
         }
-        if (aircraft.getFuelAmount() < fuelNeeded) {
+        if (aircraft.getFuelAmount() < fuelNeeded)
+        {
             problems.add("Fuel Problem");
         }
         return problems;
     }
+    // ----------------------------------------------------------
+    /**
+     * Changes flight status after successfully completing flight.
+     */
+    // ----------------------------------------------------------
+    /**
+     * Changes flight status after delaying flight.
+     */
+    // ----------------------------------------------------------
+    /**
+     * Changes flight status after canceling flight.
+     */
     
     public boolean hasWeatherProblem() {
         return getDispatchProblems().contains("Weather Problem");
