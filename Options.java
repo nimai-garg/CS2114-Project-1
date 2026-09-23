@@ -18,19 +18,21 @@ public class Options
     /** This is creating a menu from the supplied actions. */
     public Options(ArrayList<String> options)
     {
+        if (options == null || options.contains(null)) {
+            throw new IllegalArgumentException("Options must contain valid actions.");
+        }
         this.options = new ArrayList<String>(options);
     }
 
     /** This is returning  theactions that can be used with the current dispatch problems. */
     public ArrayList<String> getAvailableOptions(ArrayList<String> dispatchProblems)
     {
+        if (dispatchProblems == null) {
+            throw new IllegalArgumentException("Dispatch problems are required.");
+        }
         ArrayList<String> available = new ArrayList<String>();
         for (String option : options)
         {
-            if ("Dispatch".equalsIgnoreCase(option) && !dispatchProblems.isEmpty())
-            {
-                continue;
-            }
             if ("Add Fuel".equalsIgnoreCase(option)
                 && !dispatchProblems.contains("Fuel Problem"))
             {
@@ -44,9 +46,12 @@ public class Options
     /** This is printing the actions numbered from one. */
     public void displayOptions(ArrayList<String> available)
     {
+        if (available == null) {
+            throw new IllegalArgumentException("An options list is required.");
+        }
         for (int i = 0; i < available.size(); i++)
         {
-            System.out.println((i + 1) + ". " + available.get(i));
+            System.out.println("  [" + (i + 1) + "] " + available.get(i));
         }
     }
 
@@ -59,11 +64,14 @@ public class Options
     /** This is returning the matching action, or null for invalid input. */
     public String getChoice(String input, ArrayList<String> available)
     {
-        if (input == null)
+        if (input == null || available == null)
         {
             return null;
         }
         String choice = input.trim();
+        if (available == null) {
+            throw new IllegalArgumentException("An options list is required.");
+        }
         for (int i = 0; i < available.size(); i++)
         {
             if (available.get(i).equalsIgnoreCase(choice)

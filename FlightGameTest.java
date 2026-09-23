@@ -48,10 +48,10 @@ public class FlightGameTest extends TestCase
 
     public void testInvalidInputKeepsCurrentFlight()
     {
-        String output = play("nonsense\nCancel\nQuit\n");
+        String output = play("nonsense\nDelay\nQuit\n");
         assertTrue(output.contains("Please choose an available action."));
-        assertTrue(output.contains("Flight 1 was cancelled."));
-        assertFalse(output.contains("Flight 2 was cancelled."));
+        assertTrue(output.contains("Flight 1 was delayed."));
+        assertFalse(output.contains("Flight 2 was delayed."));
     }
 
     public void testDecisionsAndRepeatedResolution()
@@ -60,6 +60,7 @@ public class FlightGameTest extends TestCase
         Flight flight = game.generateFlight();
         flight.weather = "Clear";
         flight.fuelNeeded = flight.getAircraft().getFuelCapacity();
+        flight.getAircraft().fuelAmount = 0;
         game.processDecision("Dispatch", flight);
         assertEquals("Scheduled", flight.getStatus());
         game.processDecision("Add Fuel", flight);

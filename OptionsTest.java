@@ -27,12 +27,13 @@ public class OptionsTest extends TestCase
         problems.add("Weather Problem");
         problems.add("Fuel Problem");
         ArrayList<String> available = options.getAvailableOptions(problems);
-        assertFalse(available.contains("Dispatch"));
-        assertEquals("Add Fuel", options.getChoice("1", available));
+        assertTrue(available.contains("Dispatch"));
+        assertEquals("Add Fuel", options.getChoice("2", available));
         problems.remove("Fuel Problem");
         available = options.getAvailableOptions(problems);
-        assertEquals(2, available.size());
-        assertEquals("Delay", options.getChoice("1", available));
+        assertEquals(3, available.size());
+        assertEquals("Dispatch", options.getChoice("1", available));
+        assertEquals("Delay", options.getChoice("2", available));
     }
 
     public void testCustomMenuIsCopied()

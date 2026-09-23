@@ -33,6 +33,7 @@ public class Dispatcher
      */
     //~Public  Methods ........................................................
     
+    /** Returns the airline's current cash balance. */
     public int getCash() {
         return this.cash;
     }
@@ -42,6 +43,7 @@ public class Dispatcher
      *
      * @return the current reputation
      */
+    /** Returns the airline's current reputation score. */
     public int getReputation() {
         return this.reputation;
     }
@@ -51,6 +53,7 @@ public class Dispatcher
      *
      * @return the count of completed rounds
      */
+    /** Returns the number of resolved flight rounds. */
     public int getRoundsCompleted() {
         return this.roundsCompleted;
     }
@@ -61,6 +64,7 @@ public class Dispatcher
      * @param amount the cost to be verified
      * @return true if amount is non-negative and affordable; false otherwise
      */
+    /** Returns whether the airline can pay an action's cost. */
     public boolean canAfford(int amount) {
         if (amount < 0) {
             return false;
@@ -74,53 +78,23 @@ public class Dispatcher
      *
      * @param outcome the FlightOutcome to process
      */
+    /** Applies an action's financial, reputation, and round effects. */
     public void applyOutcome(FlightOutcome outcome) {
         if (outcome == null) {
-            return;
+            throw new IllegalArgumentException("Outcome is required.");
         }
-        this.cash += outcome.getCashChange();
-        this.reputation += outcome.getReputationChange();
+        long nextCash = (long)cash + outcome.getCashChange();
+        long nextReputation = (long)reputation + outcome.getReputationChange();
+        if (nextCash < 0 || nextCash > Integer.MAX_VALUE
+            || nextReputation > Integer.MAX_VALUE
+            || (outcome.doesRoundEnd() && roundsCompleted == Integer.MAX_VALUE)) {
+            throw new IllegalArgumentException("Outcome exceeds the airline's limits.");
+        }
+        this.cash = (int)nextCash;
+        this.reputation = (int)Math.max(0, nextReputation);
         if (outcome.doesRoundEnd()) {
             this.roundsCompleted++;
         }
     }
 
-    /** Returns the airline's current cash balance. */
-    public int getCash()
-    {
-        return cash;
-    }
-
-    /** Returns the airline's current reputation score. */
-    public int getReputation()
-    {
-        return reputation;
-    }
-
-    /** Returns the number of resolved flight rounds. */
-    public int getRoundsCompleted()
-    {
-        return roundsCompleted;
-    }
-
-    /** Returns whether the airline can pay an action's cost. */
-    public boolean canAfford(int amount)
-    {
-        return amount >= 0 && cash >= amount;
-    }
-
-    /** Applies an action's financial, reputation, and round effects. */
-    public void applyOutcome(FlightOutcome outcome)
-    {
-        if (outcome == null)
-        {
-            return;
-        }
-        cash += outcome.getCashChange();
-        reputation = Math.max(0, reputation + outcome.getReputationChange());
-        if (outcome.doesRoundEnd())
-        {
-            roundsCompleted++;
-        }
-    }
 }

@@ -85,7 +85,13 @@ public class DispatcherTest
 
     public void testApplyOutcomeNull()
     {
-        dispatcher.applyOutcome(null);
+        try {
+            dispatcher.applyOutcome(null);
+            fail("Expected null outcome to be rejected");
+        }
+        catch (IllegalArgumentException exception) {
+            assertNotNull(exception.getMessage());
+        }
 
         assertEquals(1000, dispatcher.getCash());
         assertEquals(50, dispatcher.getReputation());

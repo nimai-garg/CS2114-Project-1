@@ -24,11 +24,20 @@ public class FlightGame
      */
     public FlightGame()
     {
+        this(new Dispatcher(10000, 100, 0), new Random(), new Scanner(System.in));
+    }
+
+    FlightGame(Dispatcher dispatcher, Random random, Scanner scanner)
+    {
+        if (dispatcher == null || random == null || scanner == null
+            || dispatcher.getRoundsCompleted() != 0) {
+            throw new IllegalArgumentException("A fresh airline, random source and input are required.");
+        }
         flights = new ArrayList<Flight>();
-        dispatcher = new Dispatcher(10000, 100, 0);
+        this.dispatcher = dispatcher;
         options = new Options();
-        random = new Random();
-        scanner = new Scanner(System.in);
+        this.random = random;
+        this.scanner = scanner;
         completedFlights = 0;
         gameOver = false;
     }
@@ -42,6 +51,23 @@ public class FlightGame
      * @return a new scheduled flight
      */
     public Flight generateFlight()
+    {
+        for (int attempt = 0; attempt < 100; attempt++) {
+            try {
+                Flight flight = createScenario();
+                flights.add(flight);
+                return flight;
+            }
+            catch (IllegalArgumentException exception) {
+                if (attempt == 99) {
+                    throw new IllegalStateException("Unable to generate a valid flight.", exception);
+                }
+            }
+        }
+        throw new IllegalStateException("Unable to generate a valid flight.");
+    }
+
+    private Flight createScenario()
     {
         String[] routes = {"ROA to ATL", "ROA to CLT", "ROA to IAD"};
         String[] weather = {"Clear", "Rain", "Windy"};
@@ -62,7 +88,6 @@ public class FlightGame
             routes[random.nextInt(routes.length)],
             weather[random.nextInt(weather.length)], passengerCount,
             fuelNeeded, "Scheduled");
-        flights.add(flight);
         return flight;
     }
 
@@ -81,7 +106,7 @@ public class FlightGame
         }
         if (decision == null || decision.trim().isEmpty())
         {
-            System.out.println("Please enter a decision.");
+            System.out.println("Please enter a displayed number or action, for example Delay.");
             return;
         }
         if ("quit".equalsIgnoreCase(decision.trim()))
@@ -100,12 +125,21 @@ public class FlightGame
             return;
         }
 
+        if ("dispatch".equalsIgnoreCase(decision.trim())
+            && !flight.canDispatch()) {
+            System.out.println("This flight cannot be dispatched yet.");
+            for (String problem : flight.getDispatchProblems()) {
+                System.out.println(problem);
+            }
+            return;
+        }
         ArrayList<String> available = options.getAvailableOptions(
             flight.getDispatchProblems());
         String action = options.getChoice(decision, available);
         if (action == null)
         {
-            System.out.println("Please choose an available action.");
+            System.out.println("Please choose an available action. Enter 1 through "
+                + available.size() + ", or an action name such as Delay.");
             return;
         }
         if ("add fuel".equalsIgnoreCase(action))
@@ -126,9 +160,8 @@ public class FlightGame
             }
             flight.getAircraft().addFuel(fuelToAdd);
             dispatcher.applyOutcome(outcome);
-            System.out.println("Added enough fuel for flight "
-                + flight.getFlightNumber() + ".");
-            displayAirlineStatus();
+            displayResult("Added enough fuel for flight "
+                + flight.getFlightNumber() + ".", outcome);
             return;
         }
         if ("delay".equalsIgnoreCase(action))
@@ -141,9 +174,7 @@ public class FlightGame
             flight.delayFlight();
             dispatcher.applyOutcome(outcome);
             completedFlights++;
-            System.out.println("Flight " + flight.getFlightNumber()
-                + " was delayed.");
-            displayAirlineStatus();
+            displayResult(outcome.getMessage(), outcome);
             endGame();
             return;
         }
@@ -157,9 +188,7 @@ public class FlightGame
             flight.cancelFlight();
             dispatcher.applyOutcome(outcome);
             completedFlights++;
-            System.out.println("Flight " + flight.getFlightNumber()
-                + " was cancelled.");
-            displayAirlineStatus();
+            displayResult(outcome.getMessage(), outcome);
             endGame();
             return;
         }
@@ -170,7 +199,7 @@ public class FlightGame
         }
 
         ArrayList<String> problems = flight.getDispatchProblems();
-        if (!problems.isEmpty())
+        if (!flight.canDispatch())
         {
             System.out.println("This flight cannot be dispatched yet.");
             for (String problem : problems)
@@ -185,20 +214,17 @@ public class FlightGame
         {
             return;
         }
-        flight.completeFlight();
+        flight.completeFlight(outcome.getArrivalDelayMinutes());
         dispatcher.applyOutcome(outcome);
         completedFlights++;
-        System.out.println("Flight " + flight.getFlightNumber()
-            + " dispatched successfully.");
-        displayAirlineStatus();
+        displayResult(outcome.getMessage(), outcome);
         endGame();
     }
 
     /** Returns the outcome calculated by the shared outcome class. */
     private FlightOutcome calculateOutcome(String action, Flight flight)
     {
-        FlightOutcome calculator = new FlightOutcome(0, 0, false, "");
-        return calculator.calculateOutcome(action, flight);
+        return FlightOutcome.calculateOutcome(action, flight, random);
     }
 
     /** Checks affordability before an action changes the flight or airline. */
@@ -207,7 +233,8 @@ public class FlightGame
         int cost = -outcome.getCashChange();
         if (cost > 0 && !dispatcher.canAfford(cost))
         {
-            System.out.println("Hokie Air cannot afford that action.");
+            System.out.println("Hokie Air cannot afford that action. Cost: $"
+                + cost + "; available cash: $" + dispatcher.getCash() + ".");
             return false;
         }
         return true;
@@ -216,8 +243,9 @@ public class FlightGame
     /** Prints the airline values that are carried into later flights. */
     private void displayAirlineStatus()
     {
-        System.out.println("Cash: $" + dispatcher.getCash()
-            + " | Reputation: " + dispatcher.getReputation());
+        System.out.printf(java.util.Locale.US,
+            "  Cash: $%,d   |   Reputation: %d   |   Resolved: %d / %d%n",
+            dispatcher.getCash(), dispatcher.getReputation(), completedFlights, MAX_FLIGHTS);
     }
 
     /**
@@ -228,8 +256,27 @@ public class FlightGame
         if (!gameOver && completedFlights >= MAX_FLIGHTS)
         {
             gameOver = true;
-            System.out.println("Hokie Air has completed 10 flights.");
+            System.out.println("\n============================================================");
+            System.out.println("  FINAL RESULTS");
+            System.out.println("  Hokie Air has completed 10 flights.");
             displayAirlineStatus();
+            int departed = 0;
+            int delayed = 0;
+            int cancelled = 0;
+            int late = 0;
+            for (Flight flight : flights) {
+                if ("Completed".equals(flight.getStatus())) {
+                    departed++;
+                    if (flight.getArrivalDelayMinutes() > 0) { late++; }
+                }
+                if ("Delayed".equals(flight.getStatus())) { delayed++; }
+                if ("Cancelled".equals(flight.getStatus())) { cancelled++; }
+            }
+            System.out.println("Departed: " + departed + " | Delayed: "
+                + delayed + " | Cancelled: " + cancelled);
+            System.out.println("  Arrivals on time: " + (departed - late)
+                + " | Arrivals late: " + late);
+            System.out.println("============================================================");
         }
     }
 
@@ -252,7 +299,16 @@ public class FlightGame
      */
     private void play()
     {
-        System.out.println("Welcome to Hokie Air: Cleared for Departure!");
+        System.out.println("\n============================================================");
+        System.out.println("          HOKIE AIR: CLEARED FOR DEPARTURE");
+        System.out.println("============================================================");
+        System.out.println("  Manage 10 flights. Choose a number or an action name.");
+        System.out.println("  Dispatch earns fares but pays operating costs and late compensation.");
+        System.out.println("  Delay ends the round with no cash change and -4 reputation.");
+        System.out.println("  Cancel protects cash, earns nothing, and costs 12 reputation.");
+        System.out.println("  Fuel costs $1.50/unit. Every resolved decision ends the round.");
+        System.out.println("  Weather risk: 50% on time, 50% late by 15-90 minutes.");
+        System.out.println("  Type Quit at any prompt to leave the game.");
         Flight currentFlight = null;
         while (!quit && !gameOver && completedFlights < MAX_FLIGHTS)
         {
@@ -261,21 +317,8 @@ public class FlightGame
             {
                 currentFlight = generateFlight();
             }
-            System.out.println("Flight " + currentFlight.getFlightNumber()
-                + ": " + currentFlight.getRoute());
-            System.out.println("Weather: " + currentFlight.getWeather());
-            System.out.println("Passengers: " + currentFlight.getPassengerCount()
-                + "/" + currentFlight.getAircraft().getPassengerCapacity());
-            System.out.println("Fuel: " + currentFlight.getAircraft().getFuelAmount()
-                + "; needed: " + currentFlight.getFuelNeeded());
-            displayAirlineStatus();
-            for (String problem : currentFlight.getDispatchProblems())
-            {
-                System.out.println(problem);
-            }
-            options.displayOptions(options.getAvailableOptions(
-                currentFlight.getDispatchProblems()));
-            System.out.println("Choose an action, or type Quit.");
+            displayFlight(currentFlight);
+            System.out.print("\n  Your choice > ");
             if (!scanner.hasNextLine())
             {
                 quitGame();
@@ -289,6 +332,70 @@ public class FlightGame
             }
             processDecision(decision, currentFlight);
         }
+    }
+
+    private void displayResult(String message, FlightOutcome outcome)
+    {
+        System.out.println("\n------------------------- RESULT ---------------------------");
+        System.out.println("  " + message);
+        System.out.printf(java.util.Locale.US, "  Cash change: $%+,d | Reputation change: %+d%n",
+            outcome.getCashChange(), outcome.getReputationChange());
+        displayAirlineStatus();
+        System.out.println("------------------------------------------------------------\n");
+    }
+
+    private void displayFlight(Flight flight)
+    {
+        System.out.println("\n============================================================");
+        System.out.println("  FLIGHT " + flight.getFlightNumber() + " / " + MAX_FLIGHTS
+            + "    " + flight.getRoute());
+        System.out.println("============================================================");
+        displayAirlineStatus();
+        System.out.println("------------------------------------------------------------");
+        System.out.printf("  %-15s %s%n", "Aircraft", flight.getAircraft().getName());
+        System.out.printf("  %-15s %d minutes%n", "Flight time", flight.getFlightTime());
+        System.out.printf("  %-15s %d / %d%n", "Passengers", flight.getPassengerCount(),
+            flight.getAircraft().getPassengerCapacity());
+        System.out.printf(java.util.Locale.US, "  %-15s %,.0f available / %,.0f needed%n", "Fuel",
+            flight.getAircraft().getFuelAmount(), flight.getFuelNeeded());
+        System.out.printf("  %-15s %s%n", "Weather", flight.getWeather());
+        System.out.println("------------------------------------------------------------");
+        if (flight.hasWeatherProblem()) {
+            System.out.println("  WEATHER RISK: Dispatch may arrive on time or 15-90 min late.");
+        }
+        if (flight.getDispatchProblems().contains("Fuel Problem")) {
+            System.out.println("  FUEL REQUIRED: Add fuel before dispatching.");
+        }
+        if (flight.getDispatchProblems().contains("Passenger Problem")) {
+            System.out.println("  OVER CAPACITY: Too many passengers to dispatch.");
+        }
+        if (flight.getDispatchProblems().isEmpty()) {
+            System.out.println("  READY: All departure requirements are met.");
+        }
+        System.out.println("\n  AVAILABLE ACTIONS");
+        options.displayOptions(options.getAvailableOptions(flight.getDispatchProblems()));
+        System.out.println("  [Quit] End game");
+        int fuelCost = (int)Math.ceil(Math.max(0,
+            flight.getFuelNeeded() - flight.getAircraft().getFuelAmount()) * 1.50);
+        if (fuelCost > 0) {
+            System.out.printf(java.util.Locale.US, "\n  Fuel purchase: $%,d%n", fuelCost);
+        }
+        int net = FlightOutcome.getDispatchNet(flight);
+        System.out.println("\n  DECISION TRADEOFFS (net cash after operating costs)");
+        System.out.printf(java.util.Locale.US,
+            "  Dispatch on time: $%+,d | +10 reputation%n", net);
+        if (flight.hasWeatherProblem()) {
+            System.out.printf(java.util.Locale.US,
+                "  Dispatch late:    $%+,d to $%+,d | -6 to -14 reputation%n",
+                net - FlightOutcome.getLateCompensation(flight, 90),
+                net - FlightOutcome.getLateCompensation(flight, 15));
+        }
+        System.out.println("  Delay:             $0 | -4 reputation | ends the round");
+        System.out.println("  Cancel:            $0 | -12 reputation | preserves cash");
+        if (fuelCost > 0) {
+            System.out.println("  Dispatch figures exclude the fuel purchase shown above.");
+        }
+
     }
 
     /**

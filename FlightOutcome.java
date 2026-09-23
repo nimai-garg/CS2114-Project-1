@@ -4,6 +4,7 @@ public class FlightOutcome
     private int reputationChange;
     private boolean roundEnds;
     private String message;
+    private int arrivalDelayMinutes;
 
     public FlightOutcome(
         int cashChange,
@@ -11,6 +12,9 @@ public class FlightOutcome
         boolean roundEnds,
         String message)
     {
+        if (message == null) {
+            throw new IllegalArgumentException("Feedback is required.");
+        }
         this.cashChange = cashChange;
         this.reputationChange = reputationChange;
         this.roundEnds = roundEnds;
@@ -42,29 +46,60 @@ public class FlightOutcome
     }
 
 
+    public static int getDispatchNet(Flight flight) {
+        return Math.subtractExact(Math.multiplyExact(flight.getPassengerCount(), 150),
+            Math.addExact(1800, Math.multiplyExact(flight.getFlightTime(), 25)));
+    }
+
+    public static int getLateCompensation(Flight flight, int minutes) {
+        return Math.addExact(Math.multiplyExact(flight.getPassengerCount(), 50),
+            Math.multiplyExact(minutes, 15));
+    }
+
+    public int getArrivalDelayMinutes() {
+        return arrivalDelayMinutes;
+    }
+
     public static FlightOutcome calculateOutcome(String decision, Flight flight)
     {
+        return calculateOutcome(decision, flight, new java.util.Random());
+    }
+
+    public static FlightOutcome calculateOutcome(String decision, Flight flight,
+        java.util.Random random)
+    {
+        if (random == null) {
+            throw new IllegalArgumentException("A random source is required.");
+        }
         if (decision == null || flight == null)
         {
-            return new FlightOutcome(
-                0,
-                0,
-                false,
-                "Invalid decision or flight data. Please check value of input fields");
+            throw new IllegalArgumentException("Decision and flight are required.");
         }
 
-        String action = decision.trim().toLowerCase();
+        if (!"Scheduled".equals(flight.getStatus())) {
+            throw new IllegalArgumentException("This flight has already been resolved.");
+        }
+        String action = decision.trim().toLowerCase(java.util.Locale.ROOT);
 
         switch (action)
         {
             case "dispatch":
-                int revenue = flight.getPassengerCount() * 150;
-                return new FlightOutcome(
-                    revenue,
-                    10,
+                if (!flight.canDispatch()) {
+                    throw new IllegalArgumentException("Resolve all dispatch problems first.");
+                }
+                int revenue = getDispatchNet(flight);
+                int lateMinutes = flight.hasWeatherProblem() && random.nextBoolean()
+                    ? 15 + random.nextInt(76) : 0;
+                FlightOutcome arrival = new FlightOutcome(
+                    lateMinutes == 0 ? revenue
+                        : revenue - getLateCompensation(flight, lateMinutes),
+                    lateMinutes == 0 ? 10 : -(5 + lateMinutes / 10),
                     true,
                     "Flight " + flight.getFlightNumber()
-                        + " departed successfully!");
+                        + (lateMinutes == 0 ? " arrived on time."
+                            : " arrived " + lateMinutes + " minutes late due to weather."));
+                arrival.arrivalDelayMinutes = lateMinutes;
+                return arrival;
 
             case "add fuel":
                 Aircraft ac = flight.getAircraft();
@@ -85,31 +120,23 @@ public class FlightOutcome
                     "Aircraft already has sufficient fuel.");
 
             case "delay":
-                int delayPenalty = flight.getPassengerCount() / 5;
                 return new FlightOutcome(
                     0,
-                    -delayPenalty,
+                    -4,
                     true,
                     "Flight " + flight.getFlightNumber()
-                        + " delayed (-" + delayPenalty + " Reputation).");
+                        + " was delayed. No cash change; reputation -4.");
 
             case "cancel":
-                int refund = flight.getPassengerCount() * 150;
-                int cancelPenalty = flight.getPassengerCount() / 3;
                 return new FlightOutcome(
-                    -refund,
-                    -cancelPenalty,
+                    0,
+                    -12,
                     true,
                     "Flight " + flight.getFlightNumber()
-                        + " cancelled (-$" + refund + ", -" + cancelPenalty
-                        + " Reputation).");
+                        + " was cancelled. No revenue or operating cost; reputation -12.");
 
             default:
-                return new FlightOutcome(
-                    0,
-                    0,
-                    false,
-                    "Unknown decision: " + decision);
+                throw new IllegalArgumentException("Unknown decision: " + decision);
         }
     }
 }

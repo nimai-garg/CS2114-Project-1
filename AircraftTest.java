@@ -75,26 +75,35 @@ public class AircraftTest extends TestCase
         aircraft.addFuel(200.00);
         assertEquals(5200.00, aircraft.getFuelAmount(), 0.001);
         
-        aircraft.addFuel(900.00);
-        assertEquals(5700.00, aircraft.getFuelAmount(), 0.001);
-        
-        aircraft.addFuel(-100.00);
-        assertEquals(5700.00, aircraft.getFuelAmount(), 0.001);
+        rejectFuel(900.00);
+        rejectFuel(-100.00);
+        assertEquals(5200.00, aircraft.getFuelAmount(), 0.001);
     }
 
     /** This is testing that nonpositive fuel amounts leave a partially full tank alone. */
     public void testAddNonpositiveFuel() {
-        aircraft.addFuel(-100.00);
+        rejectFuel(-100.00);
         assertEquals(5000.00, aircraft.getFuelAmount(), 0.001);
-        aircraft.addFuel(0.00);
+        rejectFuel(0.00);
         assertEquals(5000.00, aircraft.getFuelAmount(), 0.001);
     }
 
     /** This is testing filling the tank exactly and adding fuel to a full tank. */
+    private void rejectFuel(double amount) {
+        double before = aircraft.getFuelAmount();
+        try {
+            aircraft.addFuel(amount);
+            fail("Expected invalid fuel to be rejected");
+        }
+        catch (IllegalArgumentException exception) {
+            assertEquals(before, aircraft.getFuelAmount(), 0.001);
+        }
+    }
+
     public void testAddFuelToCapacity() {
         aircraft.addFuel(700.00);
         assertEquals(5700.00, aircraft.getFuelAmount(), 0.001);
-        aircraft.addFuel(100.00);
+        rejectFuel(100.00);
         assertEquals(5700.00, aircraft.getFuelAmount(), 0.001);
     }
 }
