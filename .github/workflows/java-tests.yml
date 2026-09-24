@@ -1,0 +1,21 @@
+name: Java 17 build and tests
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Compile and run all JUnit tests
+        run: sh build.sh test
+      - name: Smoke-test the console demo
+        run: |
+          printf 'wrong\nAdd Fuel\nDispatch\nQuit\n' | sh build.sh demo > demo-output.txt
+          grep -q 'Please choose an available action' demo-output.txt
+          grep -q 'RESULT' demo-output.txt
+          grep -q 'Thanks for playing' demo-output.txt
