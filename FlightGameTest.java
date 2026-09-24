@@ -6,6 +6,9 @@ import student.TestCase;
 
 /**
  * This is testing the real game classes and console interaction.
+ * 
+ * @author Nimai Garg
+ * @version Sep 24, 2026
  */
 public class FlightGameTest extends TestCase
 {

@@ -1,15 +1,35 @@
-# Hokie Air: Cleared for Departure
+## How to Compile and Run
 
-A Java console game about managing ten airline flights, cash, and reputation.
-Requires JDK 17; the included `lib/student.jar` is needed for JUnit tests.
+The project was developed and tested using Eclipse.
 
-**Eclipse:** Import → General → Existing Projects into Workspace, select this folder, and use JavaSE-17.
-Run `FlightGame.java` with Run As → Java Application; run the project with Run As → JUnit Test (JUnit 4).
+### Opening the Project in Eclipse
 
-**Terminal:** Run these commands from the repository folder:
-```sh
-mkdir -p bin
-javac -cp lib/student.jar -d bin *.java
-java -cp bin FlightGame
-java -cp "bin:lib/student.jar" org.junit.runner.JUnitCore AircraftTest DispatcherTest FlightTest FlightOutcomeTest OptionsTest FlightGameTest IntegrationTest WeatherDispatchTest StrategyTest FinalBuildTest
-```
+1. Clone this GitHub repository or copy the repository URL.
+2. Open Eclipse.
+3. Go to **File > Import > Git > Projects from Git**.
+4. Select **Clone URI** and paste the repository URL.
+5. Select the desired branch and continue through the import process.
+6. Choose **Import existing Eclipse projects** and finish the import.
+
+### Compiling the Project
+
+Eclipse should automatically compile the project after it is imported.
+
+To manually rebuild the project:
+
+1. Go to **Project > Clean**.
+2. Select the project and click **Clean**.
+3. Make sure **Project > Build Automatically** is enabled.
+
+### Running the Program
+
+1. In the Eclipse Package Explorer, locate `FlightGame.java`.
+2. Right-click `FlightGame.java`.
+3. Select **Run As > Java Application**.
+4. The application will launch and can be used normally.
+
+### Running the Tests
+
+1. Right-click the project in the Eclipse Package Explorer.
+2. Select **Run As > JUnit Test**.
+3. Eclipse will run the project's JUnit test suite and display the results in the JUnit panel.
