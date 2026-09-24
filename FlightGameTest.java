@@ -4,7 +4,9 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import student.TestCase;
 
-/** This is testing the real game classes and console interaction. */
+/**
+ * This is testing the real game classes and console interaction.
+ */
 public class FlightGameTest extends TestCase
 {
     private String play(String input)
