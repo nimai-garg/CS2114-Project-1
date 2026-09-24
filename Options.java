@@ -18,7 +18,7 @@ public class Options
     /** This is creating a menu from the supplied actions. */
     public Options(ArrayList<String> options)
     {
-        if (options == null || options.contains(null)) {
+        if (options == null || options.stream().anyMatch(option -> option == null || option.trim().isEmpty())) {
             throw new IllegalArgumentException("Options must contain valid actions.");
         }
         this.options = new ArrayList<String>(options);
@@ -46,8 +46,8 @@ public class Options
     /** This is printing the actions numbered from one. */
     public void displayOptions(ArrayList<String> available)
     {
-        if (available == null) {
-            throw new IllegalArgumentException("An options list is required.");
+        if (available == null || available.contains(null)) {
+            throw new IllegalArgumentException("An options list with valid actions is required.");
         }
         for (int i = 0; i < available.size(); i++)
         {
@@ -69,13 +69,10 @@ public class Options
             return null;
         }
         String choice = input.trim();
-        if (available == null) {
-            throw new IllegalArgumentException("An options list is required.");
-        }
         for (int i = 0; i < available.size(); i++)
         {
-            if (available.get(i).equalsIgnoreCase(choice)
-                || Integer.toString(i + 1).equals(choice))
+            if (available.get(i) != null && (available.get(i).equalsIgnoreCase(choice)
+                || Integer.toString(i + 1).equals(choice)))
             {
                 return available.get(i);
             }

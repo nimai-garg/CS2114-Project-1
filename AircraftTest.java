@@ -91,10 +91,6 @@ public class AircraftTest
     {
         aircraft.addFuel(200.00);
         assertEquals(5200.00, aircraft.getFuelAmount(), 0.001);
-    /**
-     * This is testing that nonpositive fuel amounts leave a partially full tank
-     * alone.
-     */
         
         rejectFuel(900.00);
         rejectFuel(-100.00);
@@ -102,6 +98,10 @@ public class AircraftTest
     }
 
     /** This is testing that nonpositive fuel amounts leave a partially full tank alone. */
+    /**
+     * This is testing that nonpositive fuel amounts leave a partially full tank
+     * alone.
+     */
     public void testAddNonpositiveFuel() {
         rejectFuel(-100.00);
         assertEquals(5000.00, aircraft.getFuelAmount(), 0.001);
@@ -109,10 +109,6 @@ public class AircraftTest
         assertEquals(5000.00, aircraft.getFuelAmount(), 0.001);
     }
 
-    /**
-     * This is testing filling the tank exactly and adding fuel to a full tank.
-     */
-    /** This is testing filling the tank exactly and adding fuel to a full tank. */
     private void rejectFuel(double amount) {
         double before = aircraft.getFuelAmount();
         try {
@@ -124,6 +120,10 @@ public class AircraftTest
         }
     }
 
+    /**
+     * This is testing filling the tank exactly and adding fuel to a full tank.
+     */
+    /** This is testing filling the tank exactly and adding fuel to a full tank. */
     public void testAddFuelToCapacity() {
         aircraft.addFuel(700.00);
         assertEquals(5700.00, aircraft.getFuelAmount(), 0.001);

@@ -88,6 +88,9 @@ public class FlightGame
             routes[random.nextInt(routes.length)],
             weather[random.nextInt(weather.length)], passengerCount,
             fuelNeeded, "Scheduled");
+        if (random.nextInt(4) == 0) {
+            flight.setFuelPrice(random.nextBoolean() ? 2.25 : 3.00);
+        }
         return flight;
     }
 
@@ -230,11 +233,17 @@ public class FlightGame
     /** Checks affordability before an action changes the flight or airline. */
     private boolean canApply(FlightOutcome outcome)
     {
-        int cost = -outcome.getCashChange();
-        if (cost > 0 && !dispatcher.canAfford(cost))
+        long cost = -(long)outcome.getCashChange();
+        if (cost > Integer.MAX_VALUE
+            || (cost > 0 && !dispatcher.canAfford((int)cost)))
         {
             System.out.println("Hokie Air cannot afford that action. Cost: $"
                 + cost + "; available cash: $" + dispatcher.getCash() + ".");
+            return false;
+        }
+        if ((long)dispatcher.getCash() + outcome.getCashChange() > Integer.MAX_VALUE
+            || (long)dispatcher.getReputation() + outcome.getReputationChange() > Integer.MAX_VALUE) {
+            System.out.println("This action exceeds the airline's supported accounting limits.");
             return false;
         }
         return true;
@@ -306,7 +315,7 @@ public class FlightGame
         System.out.println("  Dispatch earns fares but pays operating costs and late compensation.");
         System.out.println("  Delay ends the round with no cash change and -4 reputation.");
         System.out.println("  Cancel protects cash, earns nothing, and costs 12 reputation.");
-        System.out.println("  Fuel costs $1.50/unit. Every resolved decision ends the round.");
+        System.out.println("  Fuel starts at $1.50/unit; market spikes may raise it to $2.25 or $3.00.");
         System.out.println("  Weather risk: 50% on time, 50% late by 15-90 minutes.");
         System.out.println("  Type Quit at any prompt to leave the game.");
         Flight currentFlight = null;
@@ -359,6 +368,8 @@ public class FlightGame
         System.out.printf(java.util.Locale.US, "  %-15s %,.0f available / %,.0f needed%n", "Fuel",
             flight.getAircraft().getFuelAmount(), flight.getFuelNeeded());
         System.out.printf("  %-15s %s%n", "Weather", flight.getWeather());
+        System.out.printf(java.util.Locale.US, "  %-15s $%.2f per unit%s%n", "Fuel price",
+            flight.getFuelPrice(), flight.getFuelPrice() > 1.50 ? "  [PRICE SPIKE]" : "");
         System.out.println("------------------------------------------------------------");
         if (flight.hasWeatherProblem()) {
             System.out.println("  WEATHER RISK: Dispatch may arrive on time or 15-90 min late.");
@@ -376,7 +387,7 @@ public class FlightGame
         options.displayOptions(options.getAvailableOptions(flight.getDispatchProblems()));
         System.out.println("  [Quit] End game");
         int fuelCost = (int)Math.ceil(Math.max(0,
-            flight.getFuelNeeded() - flight.getAircraft().getFuelAmount()) * 1.50);
+            flight.getFuelNeeded() - flight.getAircraft().getFuelAmount()) * flight.getFuelPrice());
         if (fuelCost > 0) {
             System.out.printf(java.util.Locale.US, "\n  Fuel purchase: $%,d%n", fuelCost);
         }
@@ -405,6 +416,22 @@ public class FlightGame
      */
     public static void main(String[] args)
     {
+        if (args == null || (args.length != 0
+            && !(args.length == 2 && "--seed".equals(args[0])))) {
+            System.out.println("Usage: java FlightGame [--seed whole-number], for example --seed 2114");
+            return;
+        }
+        if (args.length == 2) {
+            try {
+                long seed = Long.parseLong(args[1]);
+                new FlightGame(new Dispatcher(10000, 100, 0), new Random(seed),
+                    new Scanner(System.in)).play();
+            }
+            catch (NumberFormatException exception) {
+                System.out.println("Seed must be a whole number, for example --seed 2114.");
+            }
+            return;
+        }
         new FlightGame().play();
     }
 }

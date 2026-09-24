@@ -22,6 +22,7 @@ public class Flight
     double fuelNeeded;
     String status;
     private int arrivalDelayMinutes;
+    private double fuelPrice = 1.50;
 
     // ----------------------------------------------------------
     /**
@@ -75,12 +76,6 @@ public class Flight
     }
 
 
-    // ----------------------------------------------------------
-    /**
-     * The aircraft assigned to the flight.
-     * 
-     * @return Returns Aircraft object.
-     */
     // ~Public Methods ........................................................
     public Flight(int flightNumber, String route, int passengerCount,
         double fuelNeeded, String weather, int flightTime, Aircraft aircraft) {
@@ -88,6 +83,12 @@ public class Flight
             passengerCount, fuelNeeded, "Scheduled");
     }
 
+    // ----------------------------------------------------------
+    /**
+     * The aircraft assigned to the flight.
+     * 
+     * @return Returns Aircraft object.
+     */
     public Aircraft getAircraft() {
         return aircraft;
     }
@@ -202,19 +203,21 @@ public class Flight
         }
         return problems;
     }
-    // ----------------------------------------------------------
-    /**
-     * Changes flight status after successfully completing flight.
-     */
-    // ----------------------------------------------------------
-    /**
-     * Changes flight status after delaying flight.
-     */
-    // ----------------------------------------------------------
-    /**
-     * Changes flight status after canceling flight.
-     */
     
+    public double getFuelPrice() {
+        return fuelPrice;
+    }
+
+    void setFuelPrice(double price) {
+        if (!Double.isFinite(price) || price <= 0 || price > 10) {
+            throw new IllegalArgumentException("Fuel price must be above $0 and at most $10 per unit.");
+        }
+        if (!"Scheduled".equals(status)) {
+            throw new IllegalStateException("Resolved flight prices cannot change.");
+        }
+        fuelPrice = price;
+    }
+
     public boolean hasWeatherProblem() {
         return getDispatchProblems().contains("Weather Problem");
     }
@@ -229,6 +232,10 @@ public class Flight
         return arrivalDelayMinutes;
     }
 
+    // ----------------------------------------------------------
+    /**
+     * Changes flight status after successfully completing flight.
+     */
     public void completeFlight() {
         completeFlight(0);
     }
@@ -246,6 +253,10 @@ public class Flight
         status = "Completed";
     }
     
+    // ----------------------------------------------------------
+    /**
+     * Changes flight status after delaying flight.
+     */
     public void delayFlight() {
         requireScheduled();
         status = "Delayed";
@@ -257,6 +268,10 @@ public class Flight
         }
     }
 
+    // ----------------------------------------------------------
+    /**
+     * Changes flight status after canceling flight.
+     */
     public void cancelFlight() {
         requireScheduled();
         status = "Cancelled";

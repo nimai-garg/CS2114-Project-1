@@ -47,11 +47,20 @@ public class FlightOutcome
 
 
     public static int getDispatchNet(Flight flight) {
+        if (flight == null) {
+            throw new IllegalArgumentException("Flight is required.");
+        }
         return Math.subtractExact(Math.multiplyExact(flight.getPassengerCount(), 150),
             Math.addExact(1800, Math.multiplyExact(flight.getFlightTime(), 25)));
     }
 
     public static int getLateCompensation(Flight flight, int minutes) {
+        if (flight == null || minutes < 0) {
+            throw new IllegalArgumentException("A flight and nonnegative delay are required.");
+        }
+        if (minutes == 0) {
+            return 0;
+        }
         return Math.addExact(Math.multiplyExact(flight.getPassengerCount(), 50),
             Math.multiplyExact(minutes, 15));
     }
@@ -106,7 +115,11 @@ public class FlightOutcome
                 double needed = flight.getFuelNeeded() - ac.getFuelAmount();
                 if (needed > 0)
                 {
-                    int cost = (int)Math.ceil(needed * 1.50);
+                    double quotedCost = Math.ceil(needed * flight.getFuelPrice());
+                    if (!Double.isFinite(quotedCost) || quotedCost > Integer.MAX_VALUE) {
+                        throw new IllegalArgumentException("Fuel purchase exceeds the supported cash range.");
+                    }
+                    int cost = (int)quotedCost;
                     return new FlightOutcome(
                         -cost,
                         0,

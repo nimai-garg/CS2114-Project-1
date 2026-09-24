@@ -158,6 +158,7 @@ public class IntegrationTest extends TestCase
 
     public void testRefuelDispatchAndRepeatedActionAccounting() {
         Flight flight = readyFlight();
+        flight.setFuelPrice(1.50);
         flight.aircraft.fuelAmount = flight.getFuelNeeded() - 10;
         game.processDecision("Add Fuel", flight);
         assertEquals(9985, airline.getCash());

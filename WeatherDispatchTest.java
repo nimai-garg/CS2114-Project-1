@@ -101,6 +101,7 @@ public class WeatherDispatchTest extends TestCase
         FlightGame game = new FlightGame(airline, weatherRandom(true, 90), new Scanner(""));
         Flight flight = game.generateFlight();
         flight.weather = "Rain";
+        flight.setFuelPrice(1.50);
         flight.aircraft.fuelAmount = flight.getFuelNeeded() - 10;
         game.processDecision("Dispatch", flight);
         assertEquals("Scheduled", flight.getStatus());
