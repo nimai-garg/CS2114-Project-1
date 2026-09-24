@@ -12,10 +12,14 @@ jobs:
           distribution: temurin
           java-version: '17'
       - name: Compile and run all JUnit tests
-        run: sh build.sh test
+        run: |
+          mkdir -p bin
+          javac -Xlint:all -cp lib/student.jar -d bin *.java
+          tests=(*Test.java)
+          java -cp bin:lib/student.jar org.junit.runner.JUnitCore "${tests[@]%.java}"
       - name: Smoke-test the console demo
         run: |
-          printf 'wrong\nAdd Fuel\nDispatch\nQuit\n' | sh build.sh demo > demo-output.txt
+          printf 'wrong\nAdd Fuel\nDispatch\nQuit\n' | java -cp bin FlightGame --seed 2114 > demo-output.txt
           grep -q 'Please choose an available action' demo-output.txt
           grep -q 'RESULT' demo-output.txt
           grep -q 'Thanks for playing' demo-output.txt
