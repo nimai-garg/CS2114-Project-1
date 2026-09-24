@@ -4,3 +4,5 @@
 .DS_Store
 /lib/*.jar
 !/lib/student.jar
+/.vscode/
+/.metadata/

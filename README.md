@@ -38,7 +38,22 @@ javac -d bin Aircraft.java Flight.java Dispatcher.java FlightOutcome.java Option
 java -cp bin FlightGame
 ```
 
-In VS Code, open `FlightGame.java` and select **Run** above `main`. The checked-in VS Code settings reference the original Mac's Eclipse JDK; on another computer, use **Java: Configure Java Runtime** to select your JDK 17 or use the terminal commands above.
+### Eclipse
+
+1. Open **File → Import → General → Existing Projects into Workspace**.
+2. Select this repository folder as the root directory, check **CS2114-Project-1**, and finish. Import the existing project; do not create a new Java project or a Maven project.
+3. In **Preferences → Java → Installed JREs**, add or select **JDK 17**. Under **Java → Installed JREs → Execution Environments**, map **JavaSE-17** to that installation. Eclipse itself may run on a newer Java version; this project's build and test runtime should be Java 17.
+4. Choose **Project → Clean**, select this project, and build it. The checked-in `.project` and `.classpath` already include the Java builder, source files, and `lib/student.jar`.
+5. Right-click `FlightGame.java` → **Run As → Java Application**. Type choices into the **Console** view.
+6. To run all tests, right-click the project → **Run As → JUnit Test**. If prompted for a runner, select **JUnit 4**. The expected result is **82 tests, zero failures and errors**. In **Run Configurations → JUnit → JRE**, use the project's JavaSE-17 environment if another runtime was selected automatically.
+
+For the repeatable demo in Eclipse, open **Run Configurations → Java Application → FlightGame → Arguments**, put `--seed 2114` in **Program arguments**, and run. Clear the arguments for normal random play.
+
+If the library shows as missing, confirm `lib/student.jar` exists in the checkout, then right-click the project and select **Refresh**. Do not add a second JUnit library; the course JAR already includes the required runner. If another project with the same name is already in the workspace, use that existing project or a separate workspace.
+
+### Visual Studio Code
+
+Open `FlightGame.java` and select **Run** above `main`. Use **Java: Configure Java Runtime** to select your JDK 17. Machine-specific VS Code runtime settings stay local and are ignored by Git; they are not required for Eclipse. Terminal commands work in either editor.
 
 The course test library may print Java 17 security-manager deprecation warnings. These warnings are from the library; the JUnit result appears at the end. Newer JDK versions are not supported by this course library.
 
@@ -100,7 +115,9 @@ Unused introduction programs and the empty placeholder were removed by the team;
 - `lib/student.jar`: existing course test dependency.
 - `docs/`: current diagram, design changes, and testing map.
 - `.github/workflows/`: automated Java 17 checks.
-- `bin/`: local compiled output, ignored by Git.
+- `.project`, `.classpath`, `.settings/`: portable Eclipse Java 17 and UTF-8 configuration.
+- `bin/`: generated compiled output, ignored by Git.
+- `.vscode/`: optional local editor settings, ignored by Git.
 
 GenAI assisted integration, validation, test expansion, merge resolution, and documentation in this build. Team members should review and be ready to explain the code and the tradeoffs; the repository does not claim personal learning experiences on anyone's behalf.
 
