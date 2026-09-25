@@ -1,10 +1,23 @@
 import student.TestCase;
 
+// -------------------------------------------------------------------------
+
+/**
+ * Tests Dispatcher class
+ *
+ * @author Nolan Ayodeji
+ * @version Sep 23, 2026
+ */
 public class DispatcherTest
     extends TestCase
 {
     private Dispatcher dispatcher;
 
+    // ----------------------------------------------------------
+
+    /**
+     * Sets up the Dispatcher class for testing.
+     */
     @Override
     public void setUp()
     {
@@ -12,6 +25,11 @@ public class DispatcherTest
     }
 
 
+    // ----------------------------------------------------------
+
+    /**
+     * Tests valid constructor values.
+     */
     public void testConstructorValid()
     {
         assertEquals(1000, dispatcher.getCash());
@@ -20,6 +38,11 @@ public class DispatcherTest
     }
 
 
+    // ----------------------------------------------------------
+
+    /**
+     * Tests negative constructor values.
+     */
     public void testConstructorNegativeValues()
     {
         try
@@ -51,6 +74,11 @@ public class DispatcherTest
     }
 
 
+    // ----------------------------------------------------------
+
+    /**
+     * Tests if the airline can afford certain amounts of cash.
+     */
     public void testCanAfford()
     {
         assertTrue(dispatcher.canAfford(500));
@@ -61,9 +89,16 @@ public class DispatcherTest
     }
 
 
+    // ----------------------------------------------------------
+
+    /**
+     * Tests a scenario where the outcome causes the round to end.
+     */
     public void testApplyOutcomeRoundEnds()
     {
-        FlightOutcome outcome = new FlightOutcome(500, 10, true, "Success");
+        FlightOutcome outcome =
+            new FlightOutcome(500, 10, true, "Success");
+
         dispatcher.applyOutcome(outcome);
 
         assertEquals(1500, dispatcher.getCash());
@@ -72,9 +107,16 @@ public class DispatcherTest
     }
 
 
+    // ----------------------------------------------------------
+
+    /**
+     * Tests a scenario where the outcome causes the round to continue.
+     */
     public void testApplyOutcomeRoundDoesNotEnd()
     {
-        FlightOutcome outcome = new FlightOutcome(-200, -5, false, "Refueled");
+        FlightOutcome outcome =
+            new FlightOutcome(-200, -5, false, "Refueled");
+
         dispatcher.applyOutcome(outcome);
 
         assertEquals(800, dispatcher.getCash());
@@ -83,13 +125,20 @@ public class DispatcherTest
     }
 
 
+    // ----------------------------------------------------------
+
+    /**
+     * Tests a scenario where the outcome is null.
+     */
     public void testApplyOutcomeNull()
     {
-        try {
+        try
+        {
             dispatcher.applyOutcome(null);
             fail("Expected null outcome to be rejected");
         }
-        catch (IllegalArgumentException exception) {
+        catch (IllegalArgumentException exception)
+        {
             assertNotNull(exception.getMessage());
         }
 
